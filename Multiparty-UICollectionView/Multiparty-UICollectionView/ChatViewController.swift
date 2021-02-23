@@ -8,17 +8,19 @@
 
 import UIKit
 import OpenTok
-
+import Darwin
+let operationQueue = OperationQueue.main
 // *** Fill the following variables using your own Project info  ***
 // ***            https://tokbox.com/account/#/                  ***
 // Replace with your OpenTok API key
-let kApiKey = ""
+let kApiKey = "100"
 // Replace with your generated session ID
-let kSessionId = ""
+let kSessionId = "2_MX4xMDB-fjE2MTI4MjY0MDkzODl-RXk3VEJjZ3lySHNCaVZ5UDViSDI2Q2pIfn4"
 // Replace with your generated token
-let kToken = ""
+let kToken = "T1==cGFydG5lcl9pZD0xMDAmc2RrX3ZlcnNpb249dGJwaHAtdjAuOTEuMjAxMS0wNy0wNSZzaWc9MzZmODZkOTIzNTA2NTBhYmJmMTQ3ZmRhNTRmZjAwOGIyNmQwMDdlMzpzZXNzaW9uX2lkPTJfTVg0eE1EQi1makUyTVRJNE1qWTBNRGt6T0RsLVJYazNWRUpqWjNseVNITkNhVlo1VURWaVNESTJRMnBJZm40JmNyZWF0ZV90aW1lPTE2MTI4MzQzMDgmcm9sZT1tb2RlcmF0b3Imbm9uY2U9MTYxMjgzNDMwOC4xMDY0Njk5NDAzMTk2JmV4cGlyZV90aW1lPTE2MTU0MjYzMDg="
 
 class ChatViewController: UICollectionViewController {
+    var count = 0
     lazy var session: OTSession = {
         return OTSession(apiKey: kApiKey, sessionId: kSessionId, delegate: self)!
     }()
@@ -56,6 +58,9 @@ class ChatViewController: UICollectionViewController {
      * to the OpenTok session.
      */
     fileprivate func doPublish() {
+        
+       
+        
         var error: OTError?
         defer {
             processError(error)
@@ -64,7 +69,7 @@ class ChatViewController: UICollectionViewController {
 
         collectionView?.reloadData()
     }
-
+   
     /**
      * Instantiates a subscriber for the given stream and asynchronously begins the
      * process to begin receiving A/V content for this stream. Unlike doPublish,
@@ -72,18 +77,61 @@ class ChatViewController: UICollectionViewController {
      * add the subscriber only after it has connected and begins receiving data.
      */
     fileprivate func doSubscribe(_ stream: OTStream) {
+        
+        count += 1
+//        var error: OTError?
+//                defer {
+//                    processError(error)
+//                }
+//
+//        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1 * Double(count)) { [self] in
+//                    // your code here
+//                    guard let subscriber = OTSubscriber(stream: stream, delegate: self)
+//                        else {
+//                            print("Error while subscribing")
+//                            return
+//                    }
+//
+//                    self.session.subscribe(subscriber, error: &error)
+//
+//                    self.subscribers.append(subscriber)
+//                    //collectionView?.reloadData()
+//                }
+        
+        
+        
         var error: OTError?
-        defer {
-            processError(error)
-        }
-        guard let subscriber = OTSubscriber(stream: stream, delegate: self)
-            else {
-                print("Error while subscribing")
-                return
-        }
-        session.subscribe(subscriber, error: &error)
-        subscribers.append(subscriber)
-        collectionView?.reloadData()
+            defer {
+                processError(error)
+            }
+            operationQueue.maxConcurrentOperationCount = 1
+            let blockOperation = BlockOperation { [weak self] in
+                guard let subscriber = OTSubscriber(stream: stream, delegate: self)
+                    else {
+                        print("Error while subscribing")
+                        return
+                }
+                self?.session.subscribe(subscriber, error: &error)
+                self?.subscribers.append(subscriber)
+              //  self?.collectionView?.reloadData()
+            }
+            operationQueue.addOperation(blockOperation)
+        
+        
+        
+        
+//        var error: OTError?
+//        defer {
+//            processError(error)
+//        }
+//        guard let subscriber = OTSubscriber(stream: stream, delegate: self)
+//            else {
+//                print("Error while subscribing")
+//                return
+//        }
+//        session.subscribe(subscriber, error: &error)
+//        subscribers.append(subscriber)
+//      //  collectionView?.reloadData()
     }
 
     fileprivate func cleanupSubscriber(_ stream: OTStream) {
@@ -171,7 +219,8 @@ extension ChatViewController: OTPublisherDelegate {
 // MARK: - OTSubscriber delegate callbacks
 extension ChatViewController: OTSubscriberDelegate {
     func subscriberDidConnect(toStream subscriberKit: OTSubscriberKit) {
-        print("Subscriber connected")
+        
+        print("Subscriber connected \(count)")
     }
 
     func subscriber(_ subscriber: OTSubscriberKit, didFailWithError error: OTError) {

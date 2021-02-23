@@ -15,11 +15,11 @@ let kWidgetWidth = 320
 // *** Fill the following variables using your own Project info  ***
 // ***            https://tokbox.com/account/#/                  ***
 // Replace with your OpenTok API key
-let kApiKey = ""
+let kApiKey = "100"
 // Replace with your generated session ID
-let kSessionId = ""
+let kSessionId = "2_MX4xMDB-flR1ZSBOb3YgMTkgMTE6MDk6NTggUFNUIDIwMTN-MC4zNzQxNzIxNX4"
 // Replace with your generated token
-let kToken = ""
+let kToken = "T1==cGFydG5lcl9pZD0xMDAmc2RrX3ZlcnNpb249dGJwaHAtdjAuOTEuMjAxMS0wNy0wNSZzaWc9MWM2NDNiMzUxYTlhYTFlOGIyMmRiNzQ0MmI1YzU3ZmU5MDY3MWU3YzpzZXNzaW9uX2lkPTJfTVg0eE1EQi1mbFIxWlNCT2IzWWdNVGtnTVRFNk1EazZOVGdnVUZOVUlESXdNVE4tTUM0ek56UXhOekl4Tlg0JmNyZWF0ZV90aW1lPTE2MTAwNTgxNDgmcm9sZT1tb2RlcmF0b3Imbm9uY2U9MTYxMDA1ODE0OC4wNTg2MjMyMjAwODU4JmV4cGlyZV90aW1lPTE2MTI2NTAxNDg="
 
 
 class ViewController: UIViewController {
@@ -76,14 +76,9 @@ class ViewController: UIViewController {
             process(error: error)
         }
         let settings = OTPublisherSettings()
-        settings.name = UIDevice.current.name
+        settings.videoCapture = ScreenCapturer(withView: view)
         publisher = OTPublisher(delegate: self, settings: settings)
         publisher?.videoType = .screen
-        publisher?.audioFallbackEnabled = false
-        
-        capturer = ScreenCapturer(withView: view)
-        publisher?.videoCapture = capturer
-        
         session.publish(publisher!, error: &error)
     }
     

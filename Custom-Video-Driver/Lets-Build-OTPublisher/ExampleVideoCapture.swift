@@ -47,6 +47,7 @@ extension AVCaptureSession.Preset {
 
 protocol FrameCapturerMetadataDelegate {
     func finishPreparingFrame(_ videoFrame: OTVideoFrame?)
+    func drawThe25frame(_ data: Data?)
 }
 
 class ExampleVideoCapture: NSObject, OTVideoCapture {
@@ -77,6 +78,7 @@ class ExampleVideoCapture: NSObject, OTVideoCapture {
     fileprivate var videoFrameOrientation: OTVideoOrientation = .left  //potrait
     
     let captureQueue: DispatchQueue
+    var countFrames = 0
     
     fileprivate func updateFrameOrientation() {
         DispatchQueue.main.async {
@@ -298,6 +300,11 @@ class ExampleVideoCapture: NSObject, OTVideoCapture {
 }
 
 extension ExampleVideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
+    
+//    func sendImgToCheck( imgJPEGData: Data?) -> Bool {
+//        print("the jpeg data I got was \(String(describing: imgJPEGData?.count)) long")
+//        return false;
+//    }
     func captureOutput(_ captureOutput: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         print("Dropping frame")
     }
@@ -353,8 +360,20 @@ extension ExampleVideoCapture: AVCaptureVideoDataOutputSampleBufferDelegate {
             delegate.finishPreparingFrame(videoFrame)
         }
         
-        videoCaptureConsumer!.consumeFrame(videoFrame)
+        if countFrames == 25 {
+            countFrames = 0
+            let ciimage = CIImage(cvImageBuffer: imageBuffer)
+            let context = CIContext()
+            if let cgImage = context.createCGImage(ciimage, from: ciimage.extent) {
+                  let uiImage = UIImage(cgImage: cgImage)
+                  if let delegate = delegate {
+                    delegate.drawThe25frame(uiImage.jpegData(compressionQuality: 0.75))
+                  }
+            }
+        }
+        countFrames += 1
         
+        videoCaptureConsumer!.consumeFrame(videoFrame)
         CVPixelBufferUnlockBaseAddress(imageBuffer, CVPixelBufferLockFlags(rawValue: CVOptionFlags(0)));
     }
 }

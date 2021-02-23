@@ -14,11 +14,11 @@ let kWidgetRatio: CGFloat = 1.333
 // *** Fill the following variables using your own Project info  ***
 // ***            https://tokbox.com/account/#/                  ***
 // Replace with your OpenTok API key
-let kApiKey = ""
+let kApiKey = "100"
 // Replace with your generated session ID
-let kSessionId = ""
+let kSessionId = "2_MX4xMDB-flR1ZSBOb3YgMTkgMTE6MDk6NTggUFNUIDIwMTN-MC4zNzQxNzIxNX4"
 // Replace with your generated token
-let kToken = ""
+let kToken = "T1==cGFydG5lcl9pZD0xMDAmc2RrX3ZlcnNpb249dGJwaHAtdjAuOTEuMjAxMS0wNy0wNSZzaWc9ZWVmZjQxYjliYzYyOTdkMzlhNjQxMDc2OGYyNmY2NDc0ODJjOTAyNzpzZXNzaW9uX2lkPTJfTVg0eE1EQi1mbFIxWlNCT2IzWWdNVGtnTVRFNk1EazZOVGdnVUZOVUlESXdNVE4tTUM0ek56UXhOekl4Tlg0JmNyZWF0ZV90aW1lPTE2MTQxMTM5OTMmcm9sZT1tb2RlcmF0b3Imbm9uY2U9MTYxNDExMzk5My41NjAzMTIwODAxMTkwOSZleHBpcmVfdGltZT0xNjE2NzA1OTkz"
 
 
 class ViewController: UIViewController {
@@ -68,6 +68,10 @@ class ViewController: UIViewController {
         if let pub = publisher {
             let videoRender = ExampleVideoRender()
             pub.videoCapture = ExampleVideoCapture()
+            let c : ExampleVideoCapture? = pub.videoCapture as? ExampleVideoCapture
+            if let c = c {
+                c.delegate = self
+            }
             pub.videoRender = videoRender
             session.publish(pub, error: &error)
             
@@ -118,7 +122,26 @@ class ViewController: UIViewController {
         }
     }
 }
-
+// MARK: - FrameCapturerMetadataDelegate delegate callbacks
+extension ViewController: FrameCapturerMetadataDelegate {
+    func finishPreparingFrame(_ videoFrame: OTVideoFrame?) {
+        
+    }
+    func drawThe25frame(_ data: Data?) {
+        DispatchQueue.main.async {
+            print("I got the 25")
+            if let data = data {
+                let uiImage: UIImage? = UIImage(data: data)
+                if let uiImage = uiImage {
+                    let imageView = UIImageView(image: uiImage)
+                    imageView.frame = CGRect(x: 0, y: self.view.frame.width / kWidgetRatio, width: self.view.frame.width, height: self.view.frame.width / kWidgetRatio)
+                    self.view.addSubview(imageView)
+                }
+              
+            }
+        }
+    }
+}
 // MARK: - OTSession delegate callbacks
 extension ViewController: OTSessionDelegate {
     func sessionDidConnect(_ session: OTSession) {
